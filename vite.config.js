@@ -28,4 +28,11 @@ export default defineConfig(() => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+  optimizeDeps: {
+    include:[
+      "cubing/scramble",
+      "cubing/twisty",
+      "cubing/alg",
+    ]
+  },
 }));
