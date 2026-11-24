@@ -2,11 +2,11 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "kuber-timer",
   "version": "0.1.0",
-  "identifier": "com.lareemdb.kuber-timer",
+  "identifier": "com.kareemdb.kuber-timer",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "yarn build",
     "frontendDist": "../dist"
   },
   "app": {
