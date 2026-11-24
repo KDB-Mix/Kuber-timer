@@ -8,6 +8,7 @@ export default defineConfig(() => ({
   plugins: [react()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
+  base: process.env.VITE_GH_PAGES === 'true' ? '/Kuber-timer/' : '/',
   //
   // 1. prevent Vite from obscuring rust errors
   clearScreen: false,
