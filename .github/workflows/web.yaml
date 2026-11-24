@@ -35,16 +35,14 @@ jobs:
         run: yarn run build
         env:
           VITE_GH_PAGES: 'true'
-      - name: Verify build output
-        run: ls -la ./dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      # Use the official Pages-specific upload action
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: github-pages
           path: './dist'
 
       - name: Deploy to GitHub Pages
