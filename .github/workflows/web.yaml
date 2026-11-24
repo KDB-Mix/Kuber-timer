@@ -39,14 +39,16 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Remove symlinks from dist
-        run: find ./dist -type l -delete
+      - name: Prepare Pages artifacts
+        run: |
+          mkdir -p ./pages-artifact
+          cp -rL ./dist/. ./pages-artifact/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: './dist'
+          path: './pages-artifact'
 
       - name: Deploy to GitHub Pages
         id: deployment
