@@ -39,16 +39,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Prepare Pages artifacts
-        run: |
-          mkdir -p ./pages-artifact
-          cp -rL ./dist/. ./pages-artifact/
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: './pages-artifact'
+          path: './dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
