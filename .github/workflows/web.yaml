@@ -35,6 +35,8 @@ jobs:
         run: yarn run build
         env:
           VITE_GH_PAGES: 'true'
+      - name: Verify build output
+        run: ls -la ./dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -91,6 +91,9 @@ jobs:
 
       - name: install frontend deps
         run: yarn install
+
+      - name: init android
+        run: yarn tauri android init
       
       - name: setup Android signing
         working-directory: src-tauri/gen/android
