@@ -1,19 +1,14 @@
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
-
+  let time_on_timer = 0.0;
+  let timer_text = "00.00"
   return (
-    <main className="container">
-      <h1>Test working</h1>
+    <main className="container" style={{ width: '100vw', height: '100vh', boxSizing: 'border-box' }}>
+      <div id="timer-container">
+        <h1 id="timer-time">{timer_text}</h1>
+      </div>
     </main>
   );
 }
