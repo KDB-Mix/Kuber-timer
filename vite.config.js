@@ -9,7 +9,7 @@ export default defineConfig(() => ({
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
-  base: process.env.VITE_GH_PAGES === 'true' ? '/your-repo-name/' : '/',
+  base: process.env.VITE_GH_PAGES === 'true' ? '/Kuber-timer/' : '/',
   // 1. prevent Vite from obscuring rust errors
   clearScreen: false,
   // 2. tauri expects a fixed port, fail if that port is not available
