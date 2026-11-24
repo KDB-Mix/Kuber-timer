@@ -14,6 +14,7 @@ let start_timer = false
 let is_timing = false
 let isKeyDown = false
 let key_event = null
+let was_timing = false
 
 function App() {
   const [timerColor, setTimerColor] = useState(timer_color)
@@ -25,7 +26,14 @@ function App() {
       const isKeyboard = event.type.startsWith('key') && event.key === " "
       const isPointer = event.type.startsWith('pointer')
       if (isKeyboard || isPointer){
-        if (timer_held_down === false){
+        if (was_timing){
+          timer_held_down = true
+          is_timing = false
+          start_timer = false
+          timer_color = "black"
+          setTimerColor("black")
+        }
+        else if (timer_held_down === false){
           timer_held_down = true
           timer_color = "red"
           setTimerColor("red")
@@ -56,6 +64,11 @@ function App() {
             is_timing = true
             start_timer = false
             start_time = Date.now()
+            was_timing = true
+          }
+          else{
+            was_timing = false
+            timer_held_down = false
           }
         }
       }
