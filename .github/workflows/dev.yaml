@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - dev
+      - stable
 
 jobs:
   publish-tauri:
@@ -64,13 +64,14 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
   android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: 'yarn'
@@ -83,6 +84,8 @@ jobs:
 
       - name: setup android sdk
         uses: android-actions/setup-android@v4
+        with:
+          packages: 'ndk;26.3.11579264 cmake;3.22.1'
 
       - name: install Rust + Android targets
         uses: dtolnay/rust-toolchain@stable
@@ -94,7 +97,7 @@ jobs:
 
       - name: init android
         run: yarn tauri android init
-      
+
       - name: setup Android signing
         working-directory: src-tauri/gen/android
         run: |
@@ -102,12 +105,47 @@ jobs:
           echo "password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> keystore.properties
           base64 -d <<< "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" > $RUNNER_TEMP/keystore.jks
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
-      
+
+      - name: Inject signing config into Gradle
+        run: |
+          node -e '
+          const fs = require("fs");
+          const filePath = "src-tauri/gen/android/app/build.gradle.kts";
+          let content = fs.readFileSync(filePath, "utf8");
+
+          const signingBlock = `android {
+              signingConfigs {
+                  create("release") {
+                      val keystorePropertiesFile = rootProject.file("keystore.properties")
+                      val keystoreProperties = java.util.Properties()
+                      if (keystorePropertiesFile.exists()) {
+                          keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+                      }
+                      keyAlias = keystoreProperties.getProperty("keyAlias")
+                      keyPassword = keystoreProperties.getProperty("keyPassword") ?: keystoreProperties.getProperty("password")
+                      storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
+                      storePassword = keystoreProperties.getProperty("password") ?: keystoreProperties.getProperty("storePassword")
+                  }
+              }`;
+          
+          content = content.replace("android {", signingBlock);
+
+          content = content.replace(
+              "getByName(\"release\") {",
+              "getByName(\"release\") {\n            signingConfig = signingConfigs.getByName(\"release\")"
+          );
+
+          fs.writeFileSync(filePath, content, "utf8");
+          console.log("Gradle signing configuration injected successfully.");
+          '
+
       - name: build android
         run: yarn tauri android build --apk --aab
         env:
+          TAURI_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/keystore.jks
           TAURI_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          # ... other keystore env vars
+          TAURI_ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          TAURI_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: upload artifacts
         uses: actions/upload-artifact@v4
