@@ -28,11 +28,18 @@ export default defineConfig(() => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
-    worker: {
-      format: "es",
     },
-    optimizeDeps: {
-      exclude: ["cubing/scramble"],
-    },
+    worker: { format: "es" },
+      build: {
+        rolldownOptions: {
+          resolve: {
+            alias: {
+              "cubing/scramble": path.resolve(
+                __dirname,
+                "node_modules/cubing/js/scramble/index.js"
+              ),
+            },
+          },
+        },
   },
 }));
