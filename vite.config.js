@@ -1,26 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "node:path";
 import process from "node:process";
 
 const host = process.env.TAURI_DEV_HOST;
 
-function resolveCubing() {
-  const base = path.resolve(import.meta.dirname, "node_modules/cubing/dist/lib/cubing");
-  return {
-    name: "resolve-cubing",
-    enforce: "pre",
-    resolveId(id) {
-      if (id.startsWith("cubing/")) {
-        const sub = id.slice("cubing/".length);
-        return path.resolve(base, sub, "index.js");
-      }
-    },
-  };
-}
-
 export default defineConfig(() => ({
-  plugins: [react(), resolveCubing()],
+  plugins: [react()],
   base: process.env.VITE_GH_PAGES === 'true' ? '/Kuber-timer/' : '/',
   clearScreen: false,
   server: {
@@ -34,20 +19,6 @@ export default defineConfig(() => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+
   worker: { format: "es" },
-  optimizeDeps: {
-    exclude: ["cubing"],
-  },
-  build: {
-    rolldownOptions: {
-      resolve: {
-        alias: {
-          "cubing/scramble": path.resolve(
-            import.meta.dirname,
-            "node_modules/cubing/dist/lib/cubing/scramble/index.js"
-          ),
-        },
-      },
-    },
-  },
-}));   
+}));
