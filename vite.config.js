@@ -28,5 +28,11 @@ export default defineConfig(() => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
+    worker: {
+      format: "es",
+    },
+    optimizeDeps: {
+      exclude: ["cubing/scramble"],
+    },
   },
 }));
