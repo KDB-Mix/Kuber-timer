@@ -1,6 +1,6 @@
 # Kuber timer
 
-This is a Rubik's cube timer, adding features day by day, rn it has a scvramble generator and a timer
+This is a Rubik's cube timer, adding features day by day. Right now it has a scvramble generator and a timer
 
 ___
 # How to edit and build
