@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { randomScrambleForEvent } from "cubing/scramble";
+import "cubing/twisty";
 
 let timer_held_down = false
 let time_on_timer = 0;
@@ -18,24 +19,80 @@ let key_event = null
 let was_timing = false
 let selected_cube = "333"
 let panel_diaplay = "block"
+let scrambles = {
+  "333": [],
+  "333oh": [],
+  "333bf": [],
+  "222": [],
+  "444": [],
+  "444bf": [],
+  "555": [],
+  "555bf": [],
+  "666": [],
+  "777": [],
+  "clock": [],
+  "minx": [],
+  "pyram": [],
+  "skewb": [],
+  "sq1": []
+};
+const EVENT_TO_PUZZLE = {
+  "222": "2x2x2",
+  "333": "3x3x3",
+  "333oh": "3x3x3",
+  "333bf": "3x3x3",
+  "333fm": "3x3x3",
+  "444": "4x4x4",
+  "444bf": "4x4x4",
+  "555": "5x5x5",
+  "555bf": "5x5x5",
+  "666": "6x6x6",
+  "777": "7x7x7",
+  "pyram": "pyraminx",
+  "minx": "megaminx",
+  "skewb": "skewb",
+  "sq1": "square1",
+  "clock": "clock",
+};
+
 
 function App() {
   const [timerColor, setTimerColor] = useState(timer_color)
   const [timerText, setTimerText] = useState(timer_text)
   const [selectedCube, setSelectedCube] = useState(selected_cube)
   const [scramble, setScramble] = useState("")
+  const [scramblesArray, setScramblesArray] = useState(scrambles)
   const selectedCubeRef = useRef("333")
   const panelsDisplay = useRef(panel_diaplay)
+  const playerRef = useRef(null)
 
 
   selectedCubeRef.current = selectedCube;
 
   async function generateScramble(event) {
     const randomScramble = await randomScrambleForEvent(event)
-    setScramble(randomScramble.toString())
+    scrambles[event].push(randomScramble.toString())
+    setScramblesArray(structuredClone(scrambles))
   }
+
   useEffect(() => {
-    generateScramble(selectedCube)
+    if (playerRef.current){
+      playerRef.current.puzzle = EVENT_TO_PUZZLE[selectedCube]
+      playerRef.current.alg = scramble
+      playerRef.current.visualization = "2D"
+    }
+  }, [selectedCube, scramble])
+
+  useEffect(() => {
+    setScramble(scrambles[selectedCube][0])
+  }, [selectedCube, scramblesArray])
+  useEffect(() => {
+    const genScrambles = async() => {
+      while(scramblesArray[selectedCube].length<10){
+        await generateScramble(selectedCube)
+      }
+    }
+    genScrambles()
   }, [selectedCube])
 
 
@@ -76,7 +133,8 @@ function App() {
       }
     
     function handleUp(event){
-      const isKeyboard = event.type.startsWith('key') && event.key === " "
+      if(!event) return
+      const isKeyboard = event.key != null && event.type.startsWith('key') && event.key === " "
       const isPointer = event.type.startsWith('pointer')
       if (isKeyboard || (isPointer && event.button != 2)){
         if (timer_held_down === true){
@@ -90,6 +148,8 @@ function App() {
             was_timing = true
             panel_diaplay = "none"
             panelsDisplay.current = panel_diaplay
+            scrambles[selectedCube].shift()
+            setScramblesArray(structuredClone(scrambles))
           }
           else{
             if (was_timing){
@@ -117,6 +177,10 @@ function App() {
       if (isKeyDown) handleDown(key_event)
       else handleUp(key_event)
     }, 1)
+    for (let cube = 0; cube < 5; cube++){
+      const keys = Object.keys(scrambles)
+      Promise.all(keys.map(event => generateScramble(event)))
+    }
   }, [])
   addEventListener("keydown", event => {
     event.preventDefault()
@@ -139,13 +203,9 @@ function App() {
           setSelectedCube(selected_cube)
         }}>
           <option value="333">3x3x3</option>
-          <option value="333oh">3x3x3 oh</option>
-          <option value="333bf">3x3x3 bld</option>
           <option value="222">2x2x2</option>
           <option value="444">4x4x4</option>
-          <option value="444bf">4x4x4 bld</option>
           <option value="555">5x5x5</option>
-          <option value="555bf">5x5x5 bld</option>
           <option value="666">6x6x6</option>
           <option value="777">7x7x7</option>
           <option value="clock">Clock</option>
@@ -155,6 +215,19 @@ function App() {
           <option value="sq1">Square-1</option>
         </select>
         <p>{scramble}</p>
+        <p style={{
+          fontSize:"12px"
+        }}>Hold space or hold the screen to start the timer</p>
+      </div>
+      <div id="scramble-view" style={{
+        display: panelsDisplay.current
+      }}>
+        <twisty-player id="twisty-player"
+          ref={playerRef}
+          visualization="2D"
+          background="none"
+          control-panel="none" 
+        />  
       </div>
       <div id="timer-container" onPointerUp={event => {
         isKeyDown = false

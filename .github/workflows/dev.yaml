@@ -98,47 +98,6 @@ jobs:
       - name: init android
         run: yarn tauri android init
 
-      - name: setup Android signing
-        working-directory: src-tauri/gen/android
-        run: |
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > keystore.properties
-          echo "password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> keystore.properties
-          base64 -d <<< "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" > $RUNNER_TEMP/keystore.jks
-          echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
-
-      - name: Inject signing config into Gradle
-        run: |
-          node -e '
-          const fs = require("fs");
-          const filePath = "src-tauri/gen/android/app/build.gradle.kts";
-          let content = fs.readFileSync(filePath, "utf8");
-
-          // Insert signing config using direct environment variables (bypasses file lookup scope errors)
-          const signingBlock = `android {
-              signingConfigs {
-                  create("release") {
-                      val keystorePath = System.getenv("TAURI_ANDROID_KEYSTORE_PATH")
-                      if (!keystorePath.isNullOrEmpty()) {
-                          storeFile = java.io.File(keystorePath)
-                          storePassword = System.getenv("TAURI_ANDROID_KEYSTORE_PASSWORD")
-                          keyAlias = System.getenv("TAURI_ANDROID_KEYSTORE_ALIAS")
-                          keyPassword = System.getenv("TAURI_ANDROID_KEY_PASSWORD") ?: System.getenv("TAURI_ANDROID_KEYSTORE_PASSWORD")
-                      }
-                  }
-              }`;
-          
-          content = content.replace("android {", signingBlock);
-
-          // Wire up the release build type to use the signing config
-          content = content.replace(
-              "getByName(\"release\") {",
-              "getByName(\"release\") {\n            signingConfig = signingConfigs.getByName(\"release\")"
-          );
-
-          fs.writeFileSync(filePath, content, "utf8");
-          console.log("Gradle signing configuration injected successfully.");
-          '
-
       - name: build android
         run: yarn tauri android build --apk --aab
         env:

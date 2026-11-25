@@ -28,8 +28,27 @@ html, body, #root{
   width: 100%;
 }
 #scramble{
+  position: fixed;
   padding: 20px;
   background-color: blanchedalmond;
-  width: 100hv;
+  width: 100%;
+  max-width: 100%;
   text-align: center;
+}
+#scramble p{
+  width: 95%;
+}
+#scramble-view{
+  bottom: 0;
+  right: 0;
+  position: fixed;
+  padding: 20px;
+  background-color: blanchedalmond;
+  width: fit-content;
+  text-align: center;
+  max-width: 100%;
+}
+#twisty-player{
+  max-width: 100%;
+  /* width: 300px; */
 }
