@@ -29,6 +29,9 @@ html, body, #root{
 }
 #scramble{
   position: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
   background-color: blanchedalmond;
   width: 100%;

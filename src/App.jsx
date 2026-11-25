@@ -85,15 +85,11 @@ function App() {
 
   useEffect(() => {
     setScramble(scrambles[selectedCube][0])
-  }, [selectedCube, scramblesArray])
-  useEffect(() => {
-    const genScrambles = async() => {
-      while(scramblesArray[selectedCube].length<10){
-        await generateScramble(selectedCube)
-      }
+    if(scramblesArray[selectedCube].length < 10){
+      generateScramble(selectedCube)
+      console.log(scramblesArray[selectedCube].length)
     }
-    genScrambles()
-  }, [selectedCube])
+  }, [selectedCube, scramblesArray])
 
 
 
@@ -196,7 +192,7 @@ function App() {
   return (
     <main className="container" style={{ width: '100vw', height: '100vh', boxSizing: 'border-box' }}>
       <div id="scramble" style={{
-        display: panelsDisplay.current
+        display: panelsDisplay.current === "block"? "flex" : "none"
       }}>
         <select tabIndex={-1} name="Cube" id="cube-selector" value={selectedCube} onChange={e => {
           selected_cube = e.target.value
