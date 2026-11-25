@@ -21,4 +21,15 @@ export default defineConfig(() => ({
   },
 
   worker: { format: "es" },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/cubing')) {
+            return 'cubing-vendor';
+          }
+        },
+      },
+    },
+  },
 }));
