@@ -14,29 +14,9 @@ val tauriProperties = Properties().apply {
     }
 }
 
-// Load keystore properties for signing release builds
-val keystoreProperties = Properties().apply {
-    val propFile = file("keystore.properties")
-    if (propFile.exists()) {
-        propFile.inputStream().use { load(it) }
-    }
-}
-
 android {
     compileSdk = 37
     namespace = "com.kareemdb.kuber_timer"
-    
-    signingConfigs {
-        create("release") {
-            if (keystoreProperties.containsKey("storeFile")) {
-                storeFile = file(keystoreProperties.getProperty("storeFile"))
-                storePassword = keystoreProperties.getProperty("password") ?: keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword") ?: storePassword
-            }
-        }
-    }
-
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
         applicationId = "com.kareemdb.kuber_timer"
@@ -45,7 +25,6 @@ android {
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
         versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
     }
-    
     buildTypes {
         getByName("debug") {
             manifestPlaceholders["usesCleartextTraffic"] = "true"
@@ -60,9 +39,6 @@ android {
             }
         }
         getByName("release") {
-            // Link the release signing configuration here
-            signingConfig = signingConfigs.getByName("release")
-            
             optimization {
                enable = true
             }
