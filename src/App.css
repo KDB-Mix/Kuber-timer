@@ -27,3 +27,9 @@ html, body, #root{
   height: 100%;
   width: 100%;
 }
+#scramble{
+  padding: 20px;
+  background-color: blanchedalmond;
+  width: 100hv;
+  text-align: center;
+}

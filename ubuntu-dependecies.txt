@@ -10,3 +10,4 @@ libssl-dev
 libglib2.0-dev
 libsoup-3.0-dev
 javascriptcoregtk-4.1
+webkit2gtk-sys
