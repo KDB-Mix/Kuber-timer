@@ -5,8 +5,22 @@ import process from "node:process";
 
 const host = process.env.TAURI_DEV_HOST;
 
+function resolveCubing() {
+  const base = path.resolve(import.meta.dirname, "node_modules/cubing/dist/lib/cubing");
+  return {
+    name: "resolve-cubing",
+    enforce: "pre",
+    resolveId(id) {
+      if (id.startsWith("cubing/")) {
+        const sub = id.slice("cubing/".length);
+        return path.resolve(base, sub, "index.js");
+      }
+    },
+  };
+}
+
 export default defineConfig(() => ({
-  plugins: [react()],
+  plugins: [react(), resolveCubing()],
   base: process.env.VITE_GH_PAGES === 'true' ? '/Kuber-timer/' : '/',
   clearScreen: false,
   server: {
