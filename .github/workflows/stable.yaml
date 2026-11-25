@@ -53,9 +53,6 @@ jobs:
 
       - name: install frontend dependencies
         run: yarn install
-        
-      - name: init android
-        run: yarn tauri android init
 
       - uses: tauri-apps/tauri-action@v1
         env:
@@ -94,6 +91,11 @@ jobs:
 
       - name: install frontend deps
         run: yarn install
+
+      - name: init android
+        run: yarn tauri android init
+        env:
+          NDK_HOME: $ANDROID_HOME/ndk/29.0.13846066
       
       - name: setup Android signing
         working-directory: src-tauri/gen/android
@@ -106,8 +108,11 @@ jobs:
       - name: build android
         run: yarn tauri android build --apk --aab
         env:
+          NDK_HOME: $ANDROID_HOME/ndk/29.0.13846066
+          TAURI_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/keystore.jks
           TAURI_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          # ... other keystore env vars
+          TAURI_ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          TAURI_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: upload artifacts
         uses: actions/upload-artifact@v4
