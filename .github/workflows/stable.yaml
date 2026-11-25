@@ -27,7 +27,7 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm'
@@ -36,7 +36,7 @@ jobs:
           sudo apt-get install -y $(cat ubuntu-dependecies.txt)
 
       - name: setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: 'yarn'
@@ -64,6 +64,7 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
   android:
     runs-on: ubuntu-latest
     steps:
@@ -83,6 +84,8 @@ jobs:
 
       - name: setup android sdk
         uses: android-actions/setup-android@v4
+        with:
+          packages: 'ndk;26.3.11579264 cmake;3.22.1'
 
       - name: install Rust + Android targets
         uses: dtolnay/rust-toolchain@stable
@@ -95,8 +98,8 @@ jobs:
       - name: init android
         run: yarn tauri android init
         env:
-          NDK_HOME: $ANDROID_HOME/ndk/29.0.13846066
-      
+          NDK_HOME: ${{ steps.setup-android.outputs.ndk-path }}
+
       - name: setup Android signing
         working-directory: src-tauri/gen/android
         run: |
@@ -104,11 +107,11 @@ jobs:
           echo "password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> keystore.properties
           base64 -d <<< "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" > $RUNNER_TEMP/keystore.jks
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> keystore.properties
-      
+
       - name: build android
         run: yarn tauri android build --apk --aab
         env:
-          NDK_HOME: $ANDROID_HOME/ndk/29.0.13846066
+          NDK_HOME: ${{ steps.setup-android.outputs.ndk-path }}
           TAURI_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/keystore.jks
           TAURI_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           TAURI_ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
