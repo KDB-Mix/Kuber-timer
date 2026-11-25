@@ -113,22 +113,26 @@ jobs:
           const filePath = "src-tauri/gen/android/app/build.gradle.kts";
           let content = fs.readFileSync(filePath, "utf8");
 
-          // Insert fully-qualified signingConfigs block inside android {
-          const signingBlock = `android {
+          // Insert signing config using standard Kotlin DSL patterns already used in the file
+          const signingBlock = `
+          val keystoreProperties = Properties().apply {
+              val propFile = file("keystore.properties")
+              if (propFile.exists()) {
+                  propFile.inputStream().use { load(it) }
+              }
+          }
+
+          android {
               signingConfigs {
                   create("release") {
-                      val keystorePropertiesFile = rootProject.file("keystore.properties")
-                      val keystoreProperties = java.util.Properties()
-                      if (keystorePropertiesFile.exists()) {
-                          keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
-                      }
                       keyAlias = keystoreProperties.getProperty("keyAlias")
                       keyPassword = keystoreProperties.getProperty("keyPassword") ?: keystoreProperties.getProperty("password")
-                      storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it.toString()) }
+                      storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
                       storePassword = keystoreProperties.getProperty("password") ?: keystoreProperties.getProperty("storePassword")
                   }
               }`;
           
+          // Replace android { with our new block plus android {
           content = content.replace("android {", signingBlock);
 
           // Wire up the release build type to use the signing config
