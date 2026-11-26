@@ -78,7 +78,7 @@ function App() {
   // Changes the cube visualization settings
   useEffect(() => {
     if (playerRef.current){
-      playerRef.current.puzzle = EVENT_TO_PUZZLE[selectedCube]
+      playerRef.current.puzzle = EVENT_TO_PUZZLE[selectedCubeRef.current]
       playerRef.current.alg = scramble
       playerRef.current.visualization = "2D"
     }
@@ -86,10 +86,9 @@ function App() {
 
   // Sets the current scramble
   useEffect(() => {
-    setScramble(scrambles[selectedCube][0])
-    if(scramblesArray[selectedCube].length < 10){
-      generateScramble(selectedCube)
-      console.log(scramblesArray[selectedCube].length)
+    setScramble(scrambles[selectedCubeRef.current][0])
+    if(scramblesArray[selectedCubeRef.current].length < 10){
+      generateScramble(selectedCubeRef.current)
     }
   }, [selectedCube, scramblesArray])
 
@@ -147,7 +146,7 @@ function App() {
             was_timing = true
             panel_diaplay = "none"
             panelsDisplay.current = panel_diaplay
-            scrambles[selectedCube].shift()
+            scrambles[selectedCubeRef.current].shift()
             setScramblesArray(structuredClone(scrambles))
           }
           else{
@@ -176,21 +175,21 @@ function App() {
       if (isKeyDown) handleDown(key_event)
       else handleUp(key_event)
     }, 1)
-    for (let cube = 0; cube < 5; cube++){
+    for (let cube = 0; cube < 3; cube++){
       const keys = Object.keys(scrambles)
       Promise.all(keys.map(event => generateScramble(event)))
     }
+    addEventListener("keydown", event => {
+      event.preventDefault()
+      isKeyDown = true
+      key_event = event
+    })
+    addEventListener("keyup", event => {
+      event.preventDefault()
+      isKeyDown = false
+      key_event = event
+    })
   }, [])
-  addEventListener("keydown", event => {
-    event.preventDefault()
-    isKeyDown = true
-    key_event = event
-  })
-  addEventListener("keyup", event => {
-    event.preventDefault()
-    isKeyDown = false
-    key_event = event
-  })
   setScramble
   return (
     <main className="container" style={{ width: '100vw', height: '100vh', boxSizing: 'border-box' }}>
