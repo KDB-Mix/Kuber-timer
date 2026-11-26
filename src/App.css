@@ -55,3 +55,9 @@ html, body, #root{
   max-width: 100%;
   /* width: 300px; */
 }
+#times{
+  position: fixed;
+  top: 50%;
+  max-height: 50%;
+  overflow-y: auto;
+}

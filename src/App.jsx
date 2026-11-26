@@ -54,6 +54,14 @@ const EVENT_TO_PUZZLE = {
   "sq1": "square1",
   "clock": "clock",
 };
+let times = {"333": []} // Dict > Array > Dict
+
+
+for (let cube = 0; cube < Object.keys(EVENT_TO_PUZZLE).length; cube++){
+    if(!times[Object.keys(EVENT_TO_PUZZLE)[cube]]){
+      times[Object.keys(EVENT_TO_PUZZLE)[cube]] = []
+    }
+  }
 
 
 function App() {
@@ -91,6 +99,48 @@ function App() {
       generateScramble(selectedCubeRef.current)
     }
   }, [selectedCube, scramblesArray])
+
+  // For later to add agv calcs
+  function handleNewTimes(time, event){
+    if (!times[event]){
+      times[event] = [{
+        "time": time,
+        "scramble": scrambles[selectedCubeRef.current][0],
+      }]
+    }else{
+      times[event].push({
+        "time": time,
+        "scramble": scrambles[selectedCubeRef.current][0],
+      })
+    }
+  }
+
+  // To generate the time table
+  function generateTable(){
+    let rows = []
+    rows.push(<thead>
+      <th scope="row" key="header">
+        <td></td>
+        <td>time</td>
+      </th>
+    </thead>)
+    for (let index=0; index < times[selectedCubeRef.current].length; index++){
+      const time = times[selectedCubeRef.current][index].time
+
+      const time_ms = Math.floor((time % 1000)/10)
+      const time_secs = Math.floor((time/1000)%60)
+      const time_mins = Math.floor(time/60000)
+      const timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
+      rows.push(
+        <tr key={index}>
+          <td>{index+1}</td>
+          <td>{timer_text}</td>
+        </tr>
+      )
+    }
+
+    return rows
+  }
 
 
   // Handles click down
@@ -146,12 +196,13 @@ function App() {
             was_timing = true
             panel_diaplay = "none"
             panelsDisplay.current = panel_diaplay
-            scrambles[selectedCubeRef.current].shift()
-            setScramblesArray(structuredClone(scrambles))
           }
           else{
             if (was_timing){
+              handleNewTimes(time_on_timer, selectedCubeRef.current)
               generateScramble(selectedCubeRef.current)
+              scrambles[selectedCubeRef.current].shift()
+              setScramblesArray(structuredClone(scrambles))
               was_timing = false
             }
             timer_held_down = false
@@ -226,6 +277,13 @@ function App() {
           background="none"
           control-panel="none" 
         />  
+      </div>
+      <div id="times" style={{
+        display: panelsDisplay.current
+      }}>
+        <table>
+          {generateTable()}
+        </table>
       </div>
       <div id="timer-container" onPointerUp={event => {
         isKeyDown = false
