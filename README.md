@@ -2,6 +2,14 @@
 
 This is a Rubik's cube timer, adding features day by day. Right now it has a scvramble generator and a timer
 
+## Branches
+
+- `main` is for the current code (not guaranteed working always)
+
+- `stable` is for stable releases source code (have to work (mostly)), this is where major releases and urgent bugfixes work
+
+- `dev` is for dev releases source code (should work but it can have bugs), this is where the testers (me and some friends, anyone can join) go to test the features to make sure these feature work properly without bugs
+
 ___
 # How to edit and build
 
