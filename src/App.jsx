@@ -75,6 +75,7 @@ function App() {
     setScramblesArray(structuredClone(scrambles))
   }
 
+  // Changes the cube visualization settings
   useEffect(() => {
     if (playerRef.current){
       playerRef.current.puzzle = EVENT_TO_PUZZLE[selectedCube]
@@ -83,6 +84,7 @@ function App() {
     }
   }, [selectedCube, scramble])
 
+  // Sets the current scramble
   useEffect(() => {
     setScramble(scrambles[selectedCube][0])
     if(scramblesArray[selectedCube].length < 10){
@@ -92,7 +94,7 @@ function App() {
   }, [selectedCube, scramblesArray])
 
 
-
+  // Handles click down
   function handleDown(event){
       if(event.cancalable) event.preventDefault()
       const isKeyboard = event.type.startsWith('key') && event.key === " "
@@ -128,6 +130,7 @@ function App() {
         }
       }
     
+    // handles click up
     function handleUp(event){
       if(!event) return
       const isKeyboard = event.key != null && event.type.startsWith('key') && event.key === " "
@@ -165,7 +168,7 @@ function App() {
         time_ms = Math.floor((time_on_timer % 1000)/10)
         time_secs = Math.floor((time_on_timer/1000)%60)
         time_mins = Math.floor(time_on_timer/60000)
-        timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + time_ms
+        timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
         setTimerText(timer_text)
       }
     }, 10);
