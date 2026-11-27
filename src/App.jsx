@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { randomScrambleForEvent } from "cubing/scramble";
 import "cubing/twisty";
+import { createPortal } from "react-dom";
 
 let timer_held_down = false
 let time_on_timer = 0;
@@ -73,6 +74,7 @@ function App() {
   const selectedCubeRef = useRef("333")
   const panelsDisplay = useRef(panel_diaplay)
   const playerRef = useRef(null)
+  const [timeInfo, setTimeInfo] = useState(null)
 
 
   selectedCubeRef.current = selectedCube;
@@ -118,12 +120,12 @@ function App() {
   // To generate the time table
   function generateTable(){
     let rows = []
-    rows.push(<thead>
-      <th scope="row" key="header">
-        <td></td>
+    rows.push(
+      <tr scope="row" key="header" id="table-head">
+        <td>solve</td>
         <td>time</td>
-      </th>
-    </thead>)
+      </tr>
+    )
     for (let index=0; index < times[selectedCubeRef.current].length; index++){
       const time = times[selectedCubeRef.current][index].time
 
@@ -132,7 +134,9 @@ function App() {
       const time_mins = Math.floor(time/60000)
       const timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
       rows.push(
-        <tr key={index}>
+        <tr key={index} onClick={() => {
+          showTimeInfo(selectedCubeRef.current, index)
+        }}>
           <td>{index+1}</td>
           <td>{timer_text}</td>
         </tr>
@@ -140,6 +144,18 @@ function App() {
     }
 
     return rows
+  }
+
+  // To show the time info with the option to delete
+  function showTimeInfo(event, index){
+    const time = times[event][index].time 
+    const scramble = times[event][index].scramble
+    const time_ms = Math.floor((time % 1000)/10)
+    const time_secs = Math.floor((time/1000)%60)
+    const time_mins = Math.floor(time/60000)
+    const timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
+
+    setTimeInfo({"time": timer_text, "scramble": scramble, "index": index})
   }
 
 
@@ -297,6 +313,16 @@ function App() {
           {color: timerColor}
         }>{timerText}</h1>
       </div>
+      {
+        timeInfo &&
+        createPortal(
+          <div id="overlay">
+            <button onClick={() => {setTimeInfo(null)}}>X</button>
+            <h1>{timeInfo.time}</h1>
+          </div>
+          , document.body
+        )
+      }
     </main>
   );
 }

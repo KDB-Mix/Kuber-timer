@@ -57,7 +57,28 @@ html, body, #root{
 }
 #times{
   position: fixed;
-  top: 50%;
+  top: 25%;
   max-height: 50%;
   overflow-y: auto;
+  padding: 0 20px;
+  background-color: wheat;
+}
+#times table{
+  min-width: 100px;
+}
+#table-head{
+  position: sticky;
+  background-color: wheat;
+  top: 0;
+  z-index: 1;
+}
+#overlay{
+  position: fixed;
+  z-index: 100;
+  top: 50%;
+  left: 50%;
+  display: block;
+  background-color: antiquewhite;
+  border: 5px solid black;
+  border-radius: 10px;
 }
