@@ -20,6 +20,7 @@ let key_event = null
 let was_timing = false
 let selected_cube = "333"
 let panel_diaplay = "block"
+let time_info = null
 let scrambles = {
   "333": [],
   "333oh": [],
@@ -74,7 +75,7 @@ function App() {
   const selectedCubeRef = useRef("333")
   const panelsDisplay = useRef(panel_diaplay)
   const playerRef = useRef(null)
-  const [timeInfo, setTimeInfo] = useState(null)
+  const [timeInfo, setTimeInfo] = useState(time_info)
 
 
   selectedCubeRef.current = selectedCube;
@@ -108,11 +109,13 @@ function App() {
       times[event] = [{
         "time": time,
         "scramble": scrambles[selectedCubeRef.current][0],
+        "penalty": "None"
       }]
     }else{
       times[event].push({
         "time": time,
         "scramble": scrambles[selectedCubeRef.current][0],
+        "penalty": "None"
       })
     }
   }
@@ -134,7 +137,7 @@ function App() {
       const time_mins = Math.floor(time/60000)
       const timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
       rows.push(
-        <tr key={index} onClick={() => {
+        <tr data-key={index} onClick={() => {
           showTimeInfo(selectedCubeRef.current, index)
         }}>
           <td>{index+1}</td>
@@ -146,58 +149,128 @@ function App() {
     return rows
   }
 
+  // deleted time
+  function deleteTime(event, index){
+    if (!confirm(`Remove time ${index+1} from ${event}?`)) return
+    times[event].splice(index, 1)
+
+    time_info = null
+    setTimeInfo(null)
+  }
+
+  // Add dnf
+  function addDnf(event, index){
+    times[event][index].penalty = "DNF"
+    const timeRow = document.querySelector(`#times table tr[data-key="${index}"]`)
+
+    timeRow.cells[1].textContent = "DNF"
+
+    time_info = null
+    setTimeInfo(null)
+  }
+
+  // Add dnf
+  function addPlus2(event, index){
+    times[event][index].penalty = "+2"
+    const timeRow = document.querySelector(`#times table tr[data-key="${index}"]`)
+
+    const time = times[event][index].time+2000
+    const time_ms = Math.floor((time % 1000)/10)
+    const time_secs = Math.floor((time/1000)%60)
+    const time_mins = Math.floor(time/60000)
+
+    timeRow.cells[1].textContent = (timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)) + "+"
+
+    time_info = null
+    setTimeInfo(null)
+  }
+
+  //Removes penalty
+  function removePenalty(event, index){
+    times[event][index].penalty = "None"
+    const timeRow = document.querySelector(`#times table tr[data-key="${index}"]`)
+
+    const time = times[event][index].time
+    const time_ms = Math.floor((time % 1000)/10)
+    const time_secs = Math.floor((time/1000)%60)
+    const time_mins = Math.floor(time/60000)
+
+    timeRow.cells[1].textContent = (timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms))
+
+    time_info = null
+    setTimeInfo(null)
+  }
+
   // To show the time info with the option to delete
   function showTimeInfo(event, index){
-    const time = times[event][index].time 
+    let time = times[event][index].time 
+    if (times[event][index].penalty == "+2") time += 2000
     const scramble = times[event][index].scramble
     const time_ms = Math.floor((time % 1000)/10)
     const time_secs = Math.floor((time/1000)%60)
     const time_mins = Math.floor(time/60000)
-    const timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
+    let timer_text
+    switch (times[event][index].penalty){
+      case "None":
+        timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
+        break
+      case "+2":
+        timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms + "+")
+        break
+      case "DNF":
+        timer_text = "DNF"
+        break
+      default:
+        timer_text = (time_mins > 0? (time_mins + ":"): "")+ time_secs + "." + (time_ms < 10? ("0"+time_ms):time_ms)
+    }
 
-    setTimeInfo({"time": timer_text, "scramble": scramble, "index": index})
+    time_info = {"time": timer_text, "scramble": scramble, "index": index, "event": event, "penalty": times[event][index].penalty}
+    setTimeInfo(time_info)
   }
 
 
   // Handles click down
   function handleDown(event){
-      if(event.cancalable) event.preventDefault()
-      const isKeyboard = event.type.startsWith('key') && event.key === " "
-      const isPointer = event.type.startsWith('pointer')
-      if (isKeyboard || (isPointer && event.button != 2)){
-        if (was_timing){
-          timer_held_down = true
-          is_timing = false
-          start_timer = false
-          timer_color = "black"
-          setTimerColor("black")
-          panel_diaplay = "block"
-          panelsDisplay.current = panel_diaplay
-        }
-        else if (timer_held_down === false){
-          timer_held_down = true
-          timer_color = "red"
-          setTimerColor("red")
-          held_down_start = Date.now()
-          is_timing = false
-          start_timer = false
-          panel_diaplay = "block"
-          panelsDisplay.current = panel_diaplay
-        }
-        else{
-          if(Date.now()-held_down_start >= 500)
-            if (timer_held_down){
-              timer_color = "green"
-              setTimerColor("green")
-              start_timer = true
-            }
+    if(!event) return
+    if(time_info) return
+    if(event.cancalable) event.preventDefault()
+    const isKeyboard = event.type.startsWith('key') && event.key === " "
+    const isPointer = event.type.startsWith('pointer')
+    if (isKeyboard || (isPointer && event.button != 2)){
+      if (was_timing){
+        timer_held_down = true
+        is_timing = false
+        start_timer = false
+        timer_color = "black"
+        setTimerColor("black")
+        panel_diaplay = "block"
+        panelsDisplay.current = panel_diaplay
+      }
+      else if (timer_held_down === false){
+        timer_held_down = true
+        timer_color = "red"
+        setTimerColor("red")
+        held_down_start = Date.now()
+        is_timing = false
+        start_timer = false
+        panel_diaplay = "block"
+        panelsDisplay.current = panel_diaplay
+      }
+      else{
+        if(Date.now()-held_down_start >= 500)
+          if (timer_held_down){
+            timer_color = "green"
+            setTimerColor("green")
+            start_timer = true
           }
         }
       }
+    }
     
     // handles click up
     function handleUp(event){
       if(!event) return
+      if(timeInfo) return
       const isKeyboard = event.key != null && event.type.startsWith('key') && event.key === " "
       const isPointer = event.type.startsWith('pointer')
       if (isKeyboard || (isPointer && event.button != 2)){
@@ -317,8 +390,31 @@ function App() {
         timeInfo &&
         createPortal(
           <div id="overlay">
-            <button onClick={() => {setTimeInfo(null)}}>X</button>
-            <h1>{timeInfo.time}</h1>
+            <button onClick={() => {
+              time_info = null
+              setTimeInfo(null)
+              }} id="close-overlay">X</button>
+            <h1>Time: {timeInfo.time}</h1>
+            <p>scramble:</p>
+            <p id="scramble-overlay">{timeInfo.scramble}</p>
+            <div id="manage-time">
+              <button className="time-manager" onClick={(e) => {
+                e.stopPropagation()
+                deleteTime(timeInfo.event, timeInfo.index)
+              }}>X</button>
+              <button className="time-manager" onClick={(e) => {
+                e.stopPropagation()
+                removePenalty(timeInfo.event, timeInfo.index)
+              }}>Ok</button>
+              <button className="time-manager" onClick={(e) => {
+                e.stopPropagation()
+                addPlus2(timeInfo.event, timeInfo.index)
+              }}>+2</button>
+              <button className="time-manager" onClick={(e) => {
+                e.stopPropagation()
+                addDnf(timeInfo.event, timeInfo.index)
+              }}>DNF</button>
+            </div>
           </div>
           , document.body
         )

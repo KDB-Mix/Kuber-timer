@@ -77,8 +77,25 @@ html, body, #root{
   z-index: 100;
   top: 50%;
   left: 50%;
+  transform: translate(-50%, -50%);
   display: block;
   background-color: antiquewhite;
-  border: 5px solid black;
-  border-radius: 10px;
+  border: 2px solid black;
+  border-radius: 7px;
+  padding: 10px;
+}
+#close-overlay{
+  position: relative;
+  top: 0;
+  left: 0;
+}
+#scramble-overlay{
+  background-color: aliceblue;
+  padding: 2px;
+  max-height: 32;
+  overflow-y: auto;
+}
+#manage-time{
+  display: flex;
+  justify-content: space-around;
 }
